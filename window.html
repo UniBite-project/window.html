@@ -1,266 +1,234 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>UniBite - Πλατφόρμα</title>
-    <link rel="stylesheet" href="stl.css">
-    <link rel="stylesheet" href="s.css">
-    <link rel="stylesheet" href="stl.css">
-    <link rel="stylesheet" href="bonus.css"> <script src="window.js"></script>
-    <script src="bonus.js"></script> ```
 
-    </div>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="window.js"></script>
-    <style>
-        /* ===== CONSUMER PAGE – 3-PANEL LAYOUT ===== */
-        .consumer-page-wrapper {
-            width: 100%;
-            max-width: 1300px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            padding: 10px 0 40px 0;
-        }
-        .consumer-top-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        .consumer-panel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-        }
-        .consumer-panel--full { width: 100%; }
-        .consumer-panel-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            background: #f8fafc;
-        }
-        .consumer-panel-header h3 {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 700;
-            color: #1e293b;
-        }
-        .consumer-panel-header--active   { border-left: 4px solid #16a34a; }
-        .consumer-panel-header--exhausted { border-left: 4px solid #94a3b8; }
-        .consumer-panel-header--map      { border-left: 4px solid #800020; }
-        .consumer-panel-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%; flex-shrink: 0;
-        }
-        .consumer-panel-dot--active    { background: #16a34a; }
-        .consumer-panel-dot--exhausted { background: #94a3b8; }
-        .consumer-panel-body {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 460px;
-            overflow-y: auto;
-        }
-        .consumer-listing-card {
-            display: flex;
-            gap: 0;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .consumer-listing-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
-        }
-        .consumer-listing-card.exhausted { opacity: 0.65; filter: grayscale(35%); }
-        .consumer-listing-card img {
-            width: 88px; height: 88px;
-            object-fit: cover; flex-shrink: 0;
-        }
-        .consumer-listing-info {
-            padding: 10px 14px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .consumer-listing-info h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px; font-weight: 700; color: #1e293b;
-        }
-        .consumer-listing-info p {
-            margin: 0; font-size: 12px;
-            color: #64748b; line-height: 1.5;
-        }
-        .consumer-listing-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 8px; gap: 8px;
-        }
-        .consumer-portions-badge {
-            font-size: 11px; font-weight: 700;
-            padding: 3px 9px; border-radius: 20px;
-        }
-        .consumer-portions-badge.active-badge   { background: #dcfce7; color: #16a34a; }
-        .consumer-portions-badge.exhausted-badge { background: #f1f5f9; color: #94a3b8; }
-        .consumer-reserve-btn {
-            background: #800020; color: white;
-            border: none; padding: 5px 14px;
-            border-radius: 8px; font-size: 12px;
-            font-weight: 600; cursor: pointer;
-            transition: background 0.2s;
-        }
-        .consumer-reserve-btn:hover:not(:disabled) { background: #600018; }
-        .consumer-reserve-btn:disabled {
-            background: #e2e8f0; color: #94a3b8; cursor: not-allowed;
-        }
-        .consumer-empty {
-            text-align: center; padding: 30px 20px; color: #94a3b8;
-        }
-        .consumer-empty .empty-emoji { font-size: 32px; margin-bottom: 8px; }
-        @media (max-width: 768px) {
-            .consumer-top-row { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
+        <div class="overlay" id="overlay"></div>
 
-    <div class="app-container">
-        <div class="academic-top-bar">
-            <div class="window-logo">
-                <img src="logo.jpeg" alt="UniBite Logo" class="window-top-logo">
-            </div>
-            <div class="top-nav-menu">
-                <span class="top-nav-item active" data-page="home" data-key="menu_home">Αρχική</span>
-                <span class="top-nav-item" data-page="faq" data-key="menu_faq">Συχνές Ερωτήσεις</span>
-                <span class="top-nav-item" data-page="settings" data-key="menu_settings">Ρυθμίσεις</span>
-            </div>
-            <div class="top-bar-right">
-                <div class="navbar-right-controls">
-                </div>
-            </div>
-        </div>
-
-        <button class="menu-btn" id="hamburgerBtn">
-            <span class="menu-icon">☰</span>
-        </button>
-
-        <div class="sidebar" id="sidebarMenu">   
-            <div class="menu-item" data-page="consumer">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_consumer_reserve">Όλες οι Αγγελίες</span>
-            </div>         
-            <div class="menu-item" data-page="myorders">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_orders">Οι Παραγγελίες μου</span>
-            </div>
-            <div class="menu-item" data-page="cook">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_chef">Δημιούργησε Αγγελία</span>
-            </div>
-            <div class="menu-item" data-page="bonus">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_bonus">Πόντοι & Επιβραβεύσεις</span>
-            </div>
-            <div class="menu-item" data-page="account">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_account">Ο Λογαριασμός μου</span>
-            </div>
-            <div class="menu-item" data-page="logout">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text">Αποσύνδεση</span>
-            </div>
-            <div class="menu-item" data-page="admin" id="sidebarAdminLink" style="display:none;">
-                <span class="menu-icon-item"></span>
-                <span class="menu-text" data-key="menu_admin">Admin Dashboard</span>
-            </div>
+        <div class="page-content" id="mainContent">
             
-            <div id="adminDashboardSection" style="display: none;">
-                <div class="admin-stats-grid">
-                    <div class="admin-stat-card">
-                        <div class="stat-icon"></div>
-                        <div class="stat-info">
-                            <h3 id="adminTotalSharesMonth">0</h3>
-                            <p>Μερίδες (Τελευταίος Μήνας)</p>
-                        </div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="stat-icon"></div>
-                        <div class="stat-info">
-                            <h3 id="adminTopDonorName">-</h3>
-                            <p>Top Donor Φοιτητής</p>
-                        </div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="stat-icon"></div>
-                        <div class="stat-info">
-                            <h3 id="adminTopRating">-</h3>
-                            <p>Καλύτερη Αξιολόγηση</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="welcome-message" id="welcomeMsg" data-key="welcome_prefix">Καλώς ήρθες,</div>
+            <div class="sub-message" id="subMessage" data-key="sub_message"></div>
+            
+            <div id="page-home" class="app-page">
+                <div class="hero-section" id="unibiteIntroSection">
+                    <div class="hero-content">
+                        <div class="hero-text">
+                            <h1 class="hero-title">Αυτό είναι το <span class="unibite-highlight">UNIBITE</span>!</h1>
+                            <p class="hero-description">Καλώς ορίσατε στην πλατφόρμα ανταλλαγής σπιτικού φαγητού της πανεπιστημιακής μας κοινότητας. Εδώ μπορείτε να μοιραστείτε ή να βρείτε γευστικά, σπιτικά γεύματα εύκολα και γρήγορα!</p>
+                            
+                            <div class="instructions-list">
+                                <div class="instruction-item">
+                                    <div class="instruction-bullet">1</div>
+                                    <div class="instruction-content">
+                                        <h3>Περιήγηση</h3>
+                                        <p>Πλοηγηθείτε στο μενού από την αριστερή πλευρά της οθόνης σας.</p>
+                                    </div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-bullet">2</div>
+                                    <div class="instruction-content">
+                                        <h3>Αναζήτηση</h3>
+                                        <p>Επιλέξτε "Όλες οι Αγγελίες" για να βρείτε διαθέσιμα φαγητά γύρω σας.</p>
+                                    </div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-bullet">3</div>
+                                    <div class="instruction-content">
+                                        <h3>Δημιουργία</h3>
+                                        <p>Επιλέξτε "Δημιούργησε Αγγελία" για να προσφέρετε φαγητό σε άλλους φοιτητές.</p>
+                                    </div>
+                                </div>
+                                <div class="instruction-item">
+                                    <div class="instruction-bullet">4</div>
+                                    <div class="instruction-content">
+                                        <h3>Παρακολούθηση</h3>
+                                        <p>Δείτε τις κρατήσεις σας στο "Οι Παραγγελίες μου" και μαζέψτε πόντους!</p>
+                                    </div>
+                                </div>
 
-                <div class="admin-tables-layout">
-                    <div class="admin-table-box">
-                        <div class="table-header-zone">
-                            <h3>Κατάταξη Φοιτητών (Leaderboard)</h3>
-                        </div>
-                        <table class="admin-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Θέση</th>
-                                    <th>Φοιτητής</th>
-                                    <th>Μερίδες που Προσέφερε</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminLeaderboardBody"></tbody>
-                        </table>
-                    </div>
 
-                    <div class="admin-table-box">
-                        <div class="table-header-zone">
-                            <h3>Γεύματα με Υψηλότερη Αξιολόγηση</h3>
-                        </div>
-                        <table class="admin-data-table">
-                            <thead>
-                                <tr>
-                                    <th>Φαγητό</th>
-                                    <th>Μάγειρας</th>
-                                    <th>Βαθμολογία</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminTopMealsBody"></tbody>
-                        </table>
-                    </div>
-                </div>
+                        <div id="page-bonus" class="app-page" style="display:none;">
+                            <style>
+                                /* ── Bonus page scoped styles ── */
+                                #page-bonus {
+                                    padding: 24px 16px 48px;
+                                    max-width: 520px;
+                                    margin: 0 auto;
+                                    width: 100%;
+                                }
 
-                <div class="admin-table-box full-width-table">
-                    <div class="table-header-zone">
-                        <h3>Κατάσταση Όλων των Αγγελιών στη ΒΔ (Ιστορικό & Στατιστικά)</h3>
-                    </div>
-                    <table class="admin-data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Τίτλος Γεύματος</th>
-                                <th>Μάγειρας</th>
-                                <th>Ημ. Δημιουργίας</th>
-                                <th>Κατάσταση</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminAllAdsBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                                /* Points badge */
+                                #page-bonus .bp-points-badge {
+                                    display: flex;
+                                    align-items: baseline;
+                                    justify-content: center;
+                                    gap: 6px;
+                                    margin-bottom: 4px;
+                                }
+                                #page-bonus .bp-points-number {
+                                    color: #D11A1A;
+                                    font-size: 40px;
+                                    font-weight: 800;
+                                    line-height: 1;
+                                    transition: transform 0.25s ease, color 0.25s ease;
+                                }
+                                #page-bonus .bp-points-number.bump {
+                                    transform: scale(1.2);
+                                    color: #a80000;
+                                }
+                                #page-bonus .bp-points-label {
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    color: #94a3b8;
+                                    text-transform: uppercase;
+                                    letter-spacing: 1px;
+                                }
+                                #page-bonus .bp-card-meta {
+                                    text-align: center;
+                                    font-size: 13px;
+                                    color: #94a3b8;
+                                    margin-bottom: 18px;
+                                }
+
+                                /* Loyalty card */
+                                #page-bonus .bp-card {
+                                    width: 100%;
+                                    max-width: 420px;
+                                    aspect-ratio: 420 / 260;
+                                    background: #fff;
+                                    border-radius: 22px;
+                                    position: relative;
+                                    overflow: hidden;
+                                    padding: 22px;
+                                    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.08);
+                                    margin: 0 auto 24px;
+                                    background-image: url('unibite.png');
+                                    background-repeat: no-repeat;
+                                    background-size: contain;
+                                    background-position: center;
+                                    transition: transform 0.2s, box-shadow 0.2s;
+                                }
+                                #page-bonus .bp-card:hover {
+                                    transform: translateY(-3px);
+                                    box-shadow: 0 28px 48px -12px rgba(0,0,0,0.28);
+                                }
+                                #page-bonus .bp-card::before {
+                                    content: '';
+                                    position: absolute;
+                                    top: -50%; left: 45%;
+                                    width: 100%; height: 200%;
+                                    background: linear-gradient(to right,
+                                        rgba(255,255,255,0.8) 0%,
+                                        rgba(224,242,241,0.6) 30%,
+                                        rgba(192,192,192,0.4) 70%,
+                                        rgba(255,255,255,0) 100%
+                                    );
+                                    transform: rotate(25deg);
+                                    pointer-events: none;
+                                    z-index: 2;
+                                }
+                                #page-bonus .bp-card-mascot {
+                                    position: absolute;
+                                    bottom: 0; right: -22px;
+                                    height: 100%; width: auto;
+                                    object-fit: contain;
+                                    opacity: 0.85;
+                                    z-index: 3;
+                                    pointer-events: none;
+                                }
+                                #page-bonus .bp-card-inner {
+                                    position: relative;
+                                    z-index: 5;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: space-between;
+                                    height: 100%;
+                                }
+                                #page-bonus .bp-brand {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                }
+                                #page-bonus .bp-logo-icon {
+                                    width: 42px; height: 42px;
+                                    border-radius: 26px;
+                                    background: rgba(255,255,255,0.25);
+                                    display: flex; align-items: center; justify-content: center;
+                                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                                }
+                                #page-bonus .bp-logo-icon img { width: 20px; height: 20px; object-fit: contain; }
+                                #page-bonus .bp-logo-text {
+                                    font-family: 'Lobster', cursive;
+                                    font-size: 20px;
+                                    color: #00032E;
+                                }
+                                #page-bonus .bp-card-footer { display: flex; align-items: flex-end; }
+                                #page-bonus .bp-holder-name {
+                                    font-family: 'Cambria', serif;
+                                    font-size: 12px; font-weight: 600;
+                                    text-transform: uppercase;
+                                    letter-spacing: 1px;
+                                    color: #1a1a1a;
+                                    margin-bottom: 4px;
+                                }
+                                #page-bonus .bp-digits {
+                                    font-size: 12px; font-weight: 600;
+                                    letter-spacing: 1.5px;
+                                    color: #1a1a1a;
+                                }
+
+                                /* Sync status */
+                                #page-bonus .bp-sync {
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 6px;
+                                    font-size: 10px;
+                                    font-weight: 600;
+                                    color: #94a3b8;
+                                    letter-spacing: 0.4px;
+                                    text-transform: uppercase;
+                                    margin-bottom: 20px;
+                                }
+                                #page-bonus .bp-sync-dot {
+                                    width: 7px; height: 7px;
+                                    border-radius: 50%;
+                                    background: #22c55e;
+                                    animation: bp-pulse 2s infinite;
+                                }
+                                #page-bonus .bp-sync-dot.syncing {
+                                    background: #f59e0b;
+                                    animation: bp-pulse-fast 0.6s infinite;
+                                }
+                                @keyframes bp-pulse      { 0%,100%{opacity:1} 50%{opacity:.35} }
+                                @keyframes bp-pulse-fast { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
+
+                                /* History section */
+                                #page-bonus .bp-history-header {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    margin-bottom: 12px;
+                                }
+                                #page-bonus .bp-history-header h2 {
+                                    font-size: 1rem;
+                                    font-weight: 700;
+                                    color: #0f172a;
+                                    margin: 0;
+                                }
+                                #page-bonus .bp-refresh-btn {
+                                    background: none;
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 8px;
+                                    padding: 5px 10px;
+                                    font-family: 'Montserrat', sans-serif;
+                                    font-size: 11px; font-weight: 600;
+                                    color: #64748b;
+                                    cursor: pointer;
+                                    transition: all 0.2s;
+                                }
+                                #page-bonus .bp-refresh-btn:hover {
+                                    border-color: #800020;
+                                    color: #800020;
+                                    background: #fff5f5;
+                                }
+                                #page-bonus .bp-tx-list {
+                                    display: flex; flex-direction: column; gap: 10px;
+                                }
